@@ -83,8 +83,17 @@ export class StatisticsService {
 
         const statistics = await this.voltageModel.aggregate([
             { $match: { timestamp: { $gte: startDate, $lt: endDate } } },
-            { $group: { _id: { $hour: "$timestamp" }, avg: { $avg: "$volts" } }},
-            { $sort: { _id: 1 } }
+            {
+                $group: {
+                    _id: { $hour: "$timestamp" },
+                    min: { $min: "$volts" },
+                    max: { $max: "$volts" },
+                    average: { $avg: "$volts" },
+                    count: { $sum: 1 }
+                }
+            },
+            { $project: { _id: 0, hour: "$_id", min: 1, max: 1, average: 1, count: 1 } },
+            { $sort: { hour: 1 } }
         ]);
 
         return { date, statistics };
